@@ -235,7 +235,7 @@ h1{font-size:22px;font-weight:900;letter-spacing:-.5px;line-height:1;margin:5px 
 </div>
 <script>
 const _D={
-  meta:{cliente:'Clínica Telmo Maia',periodo:'01 Jul 2026 – 22 Jul 2026',conta:'2910104516566',gestor:'Pedro Silva',gerado:'22/07/2026',link:'https://pedro-s-developer.github.io/dashboard-telmo-maia/'},
+  meta:{cliente:'Clínica Telmo Maia',periodo:'01 Jul 2026 – 22 Jul 2026',conta:'2910104516566',gestor:'Pedro Silva',gerado:'22/07/2026',link:'https://pedro-s-developer.github.io/dashboard-telmo/',tipo:'msg'},
   insight:{
     txt:'Em 22 dias, a clínica gerou <span class="ins-hl">139 novos contatos qualificados</span> no WhatsApp, com custo médio de <span class="ins-hl">R$ 10,83 por conversa</span>. Implante Dentário se destacou com <span class="ins-hl">CPL R$ 7,98 (Ótimo)</span> — menor custo por contato do período.',
     stats:[['Conversas WhatsApp','139'],['CPL Médio Fundo','R$ 10,83'],['Melhor CPL','R$ 7,98']]
@@ -248,9 +248,7 @@ const _D={
   ],
   gcards:[
     {color:'#E08C00',bg:'#FFF9EC',icon:'🎯',label:'Topo — Descoberta',camps:'1 camp.',invest:'R$ 255,68',m:'634',ml:'Visitas IG',cpr:'R$ 0,40',cprl:'C/Visita',pct:'14,5%',s1:'—',s1l:'Impressões',s2:'R$ 255,68',s2l:'Investido'},
-    {color:'#0077A8',bg:'#E0F4FA',icon:'🌐',label:'Meio — Tráfego',camps:'0 camp.',invest:'R$ 0',m:'0',ml:'Visitas',cpr:'—',cprl:'C/Visita',pct:'0%',s1:'0',s1l:'Cliques',s2:'0%',s2l:'CTR'},
-    {color:'#7B2FBE',bg:'#F3EAFF',icon:'💬',label:'Fundo — MSG',camps:'4 camp.',invest:'R$ 1.505,56',m:'139',ml:'Conversas',cpr:'R$ 10,83',cprl:'C/Conversa',pct:'85,5%',s1:'45',s1l:'Melhor vol.',s2:'R$ 7,98',s2l:'Melhor CPL'},
-    {color:'#1877F2',bg:'#EAF1FF',icon:'🛒',label:'Fundo — Vendas',camps:'0 camp.',invest:'R$ 0',m:'0',ml:'Compras',cpr:'—',cprl:'C/Venda',pct:'0%',s1:'—',s1l:'ROAS',s2:'—',s2l:'Receita'}
+    {color:'#7B2FBE',bg:'#F3EAFF',icon:'💬',label:'Fundo — MSG',camps:'4 camp.',invest:'R$ 1.505,56',m:'139',ml:'Conversas',cpr:'R$ 10,83',cprl:'C/Conversa',pct:'85,5%',s1:'45',s1l:'Melhor vol.',s2:'R$ 7,98',s2l:'Melhor CPL'}
   ],
   camps:{
     TOPO:[
@@ -369,6 +367,7 @@ new Chart(document.getElementById('cPie'),{
 });
 document.getElementById('pieSub').textContent='Por estágio do funil · '+_D.pie.total+' total';
 document.getElementById('pieLg').innerHTML=_D.pie.labels.map(function(l,i){
+  if(!_D.pie.data[i])return'';
   return '<div><div style="display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:3px">'
     +'<span style="width:7px;height:7px;border-radius:50%;background:'+_D.pie.cores[i]+'"></span>'
     +'<span class="pl-lbl">'+l+'</span></div>'
@@ -393,14 +392,19 @@ document.getElementById('tab-campanhas').innerHTML=seqs.map(function(s){
 
 if(_D.daily.length){
   var mx=Math.max.apply(null,_D.daily.map(function(r){return r.invest;}));
+  var _tp=_D.meta.tipo||'mixed';
   document.getElementById('tab-dia').innerHTML=_D.daily.map(function(r){
+    var _cpl=r.conversas>0?'R$ '+(r.invest/r.conversas).toLocaleString('pt-BR',{minimumFractionDigits:2}):'—';
     return '<div class="dr"><div class="dr-date">'+r.label+'</div>'
       +'<div class="dr-bar"><div class="dr-fill" style="width:'+(r.invest/mx*100).toFixed(1)+'%"></div></div>'
-      +'<div class="dr-stats">'
+      +'<div class="dr-stats"'+(_tp==='msg'?' style="grid-template-columns:repeat(3,1fr)"':'')+' >'
       +'<div><div class="ds-lbl">Invest.</div><div class="ds-v">R$ '+r.invest.toLocaleString('pt-BR',{minimumFractionDigits:2})+'</div></div>'
       +'<div><div class="ds-lbl">Conv.</div><div class="ds-v" style="color:var(--pur)">'+r.conversas+'</div></div>'
-      +'<div><div class="ds-lbl">Compras</div><div class="ds-v" style="color:var(--blue)">'+r.compras+'</div></div>'
-      +'<div><div class="ds-lbl">Receita</div><div class="ds-v" style="color:var(--grn)">R$ '+r.receita.toLocaleString('pt-BR',{minimumFractionDigits:0})+'</div></div>'
+      +(_tp==='msg'
+        ?'<div><div class="ds-lbl">CPL</div><div class="ds-v" style="color:var(--ylw)">'+_cpl+'</div></div>'
+        :'<div><div class="ds-lbl">Compras</div><div class="ds-v" style="color:var(--blue)">'+r.compras+'</div></div>'
+        +'<div><div class="ds-lbl">Receita</div><div class="ds-v" style="color:var(--grn)">R$ '+r.receita.toLocaleString('pt-BR',{minimumFractionDigits:0})+'</div></div>'
+      )
       +'</div></div>';
   }).join('');
 }else{document.getElementById('tab-dia').innerHTML='<p style="color:var(--t4);padding:14px;font-size:12px">Sem dados diários.</p>';}
@@ -418,25 +422,31 @@ if(_D.daily.length){
   }
   function p(a,b){return b>0?Math.round(parseInt(a)/parseInt(b)*100):0;}
   var fv=_D.funil_ven,fm=_D.funil_msg;
-  document.getElementById('tab-funil').innerHTML=
-    '<div class="fn"><div class="fn-hdr"><div class="fn-icon" style="background:#EAF1FF;color:#1877F2">🛒</div>'
-    +'<div><div class="fn-title">Funil — Vendas (VEN)</div><div class="fn-sub">Do alcance à compra</div></div></div>'
-    +s('b','📣','Alcance','Pessoas impactadas',fv.alcance,'—','entrada')
-    +s('t','🖱️','Cliques','Tráfego gerado',fv.cliques,p(fv.cliques,fv.alcance)+'%','CTR')
-    +s('y','🌐','Visitas ao Site','Qualificação',fv.visitas,p(fv.visitas,fv.cliques)+'%','de cliques')
-    +s('p','🛒','Adições ao Carrinho','Intenção de compra',fv.carrinho,p(fv.carrinho,fv.visitas)+'%','de visitas')
-    +s('y','📝','Checkout Iniciado','Comprometimento',fv.checkout,p(fv.checkout,fv.carrinho)+'%','do carrinho')
-    +s('g','✅','Compras Finalizadas','Conversão final',fv.compras,p(fv.compras,fv.checkout)+'%','do checkout')
-    +(fv.insight?'<div class="fn-ins">'+fv.insight+'</div>':'')
-    +'</div>'
-    +'<div class="fn"><div class="fn-hdr"><div class="fn-icon" style="background:#F3EAFF;color:#7B2FBE">💬</div>'
-    +'<div><div class="fn-title">Funil — Mensagens (MSG)</div><div class="fn-sub">Do alcance à conversa</div></div></div>'
-    +s('p','📣','Alcance','Pessoas impactadas',fm.alcance,'—','entrada')
-    +s('t','🖱️','Cliques','Tráfego para mensagem',fm.cliques,p(fm.cliques,fm.alcance)+'%','CTR')
-    +s('g','💬','Conversas Iniciadas','Engajamento',fm.conversas,p(fm.conversas,fm.cliques)+'%','de cliques')
-    +s('y','🆕','Novos Contatos','Leads qualificados',fm.novos,p(fm.novos,fm.conversas)+'%','das conversas')
-    +(fm.insight?'<div class="fn-ins">'+fm.insight+'</div>':'')
-    +'</div>';
+  var _tp=_D.meta.tipo||'mixed';
+  var _fhtml='';
+  if(_tp!=='msg'){
+    _fhtml+='<div class="fn"><div class="fn-hdr"><div class="fn-icon" style="background:#EAF1FF;color:#1877F2">🛒</div>'
+      +'<div><div class="fn-title">Funil — Vendas (VEN)</div><div class="fn-sub">Do alcance à compra</div></div></div>'
+      +s('b','📣','Alcance','Pessoas impactadas',fv.alcance,'—','entrada')
+      +s('t','🖱️','Cliques','Tráfego gerado',fv.cliques,p(fv.cliques,fv.alcance)+'%','CTR')
+      +s('y','🌐','Visitas ao Site','Qualificação',fv.visitas,p(fv.visitas,fv.cliques)+'%','de cliques')
+      +s('p','🛒','Adições ao Carrinho','Intenção de compra',fv.carrinho,p(fv.carrinho,fv.visitas)+'%','de visitas')
+      +s('y','📝','Checkout Iniciado','Comprometimento',fv.checkout,p(fv.checkout,fv.carrinho)+'%','do carrinho')
+      +s('g','✅','Compras Finalizadas','Conversão final',fv.compras,p(fv.compras,fv.checkout)+'%','do checkout')
+      +(fv.insight?'<div class="fn-ins">'+fv.insight+'</div>':'')
+      +'</div>';
+  }
+  if(_tp!=='ven'){
+    _fhtml+='<div class="fn"><div class="fn-hdr"><div class="fn-icon" style="background:#F3EAFF;color:#7B2FBE">💬</div>'
+      +'<div><div class="fn-title">Funil — Mensagens (MSG)</div><div class="fn-sub">Do alcance à conversa</div></div></div>'
+      +s('p','📣','Alcance','Pessoas impactadas',fm.alcance,'—','entrada')
+      +s('t','🖱️','Cliques','Tráfego para mensagem',fm.cliques,p(fm.cliques,fm.alcance)+'%','CTR')
+      +s('g','💬','Conversas Iniciadas','Engajamento',fm.conversas,p(fm.conversas,fm.cliques)+'%','de cliques')
+      +s('y','🆕','Novos Contatos','Leads qualificados',fm.novos,p(fm.novos,fm.conversas)+'%','das conversas')
+      +(fm.insight?'<div class="fn-ins">'+fm.insight+'</div>':'')
+      +'</div>';
+  }
+  document.getElementById('tab-funil').innerHTML=_fhtml;
 })();
 
 document.querySelectorAll('.tb').forEach(function(b){
