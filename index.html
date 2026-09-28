@@ -1499,9 +1499,24 @@ function getRK(seg){return _RKPIS?_RKPIS[seg]:SKPIS[seg];}
 function _fmtR(v){return 'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function _fmtN(v){return Math.round(v).toLocaleString('pt-BR');}
 
+function _sumRawByFunil(funil, field){
+  var r=_currentRange||{start:'0000-00-00',end:'9999-99-99'};
+  var tot=0;
+  (_D.campanhas||[]).forEach(function(c){
+    if(c.funil!==funil) return;
+    c.dias.forEach(function(d){
+      if(d.data<r.start||d.data>r.end) return;
+      tot+=(d[field]||0);
+    });
+  });
+  return tot;
+}
+
 function _buildRKPIS(segs,totInv){
   var ven=segs.FUNDO_VEN,msg=segs.FUNDO_MSG,meio=segs.MEIO,topo=segs.TOPO;
   function pct(v){return totInv>0?(v/totInv*100).toFixed(0)+'% do orçamento':'—';}
+  var topoIGV=_sumRawByFunil('TOPO','ig_visits');
+  var topoIGF=_sumRawByFunil('TOPO','ig_followers');
   return {
     FUNDO_VEN:{legend:'Fundo — Vendas',kpis:[
       {label:'Investido',value:_fmtR(ven.totInv),raw:ven.totInv,color:'var(--text)',sub:pct(ven.totInv)},
@@ -1525,7 +1540,7 @@ function _buildRKPIS(segs,totInv){
       {label:'Investido',value:_fmtR(topo.totInv),raw:topo.totInv,color:'var(--text)',sub:pct(topo.totInv)},
       {label:'Alcance',value:_fmtN(topo.totRes),raw:topo.totRes,color:'var(--text)',sub:'pessoas impactadas'},
       {label:'CPM',value:topo.totRes>0?_fmtR(topo.totInv/topo.totRes*1000):'—',raw:topo.totRes>0?topo.totInv/topo.totRes*1000:0,color:'var(--text)',sub:'custo por mil impressões'},
-      {label:'Visitas ao IG',value:'—',raw:0,color:'var(--text2)',sub:'dados não desagregados'}
+      {label:'Visitas ao IG',value:topoIGV>0?_fmtN(topoIGV):'—',raw:topoIGV,color:'var(--text)',sub:'+'+_fmtN(topoIGF)+' novos seguidores'}
     ]}
   };
 }
