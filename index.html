@@ -1107,7 +1107,7 @@ function renderCampanhasTab(D){
         extra = c.roas.toFixed(2).replace('.',',')+'x';
         extraColor = 'var(--cs-pos)';
       }
-      return {name:c.name, invest:c.invest, result:c.result, cpr:c.cpr, extra:extra, extraColor:extraColor, bar_pct:c.bar_pct};
+      return {name:c.label||c.name, invest:c.invest, result:c.result, cpr:c.cpr, extra:extra, extraColor:extraColor, bar_pct:c.bar_pct};
     });
     return {seg:seg, label:m.label, badge:m.badge, resultLabel:m.resultLabel, cprLabel:m.cprLabel, extraLabel:m.extraLabel, hasExtra:m.hasExtra, showReceita:m.showReceita, totalReceita:totalReceita, camps:mappedCamps};
   }).filter(Boolean);
